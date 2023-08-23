@@ -9,7 +9,7 @@ export default function App() {
   const [cameraPermission, setCameraPermission] = React.useState(null);
   const [isOverlayVisible, setIsOverlayVisible] = React.useState(false);
   const [speechIndex, setSpeechIndex] = React.useState(0);
-  const [isButtonsDisabled, setIsButtonsDisabled] = React.useState(false); // State to control button disabling
+  const [isButtonsDisabled, setIsButtonsDisabled] = React.useState(false);
 
   const overlayTexts = [
     '도움말 버튼을 누르셨습니다. 다음 설명을 듣고싶으시면 화면을 터치해주세요.',
@@ -29,25 +29,33 @@ export default function App() {
 
   async function helpSound() {
     setIsOverlayVisible(true);
-    setIsButtonsDisabled(true); // Disable buttons during speech playback
+    setIsButtonsDisabled(true);
     try {
+      await Speech.stop(); // Stop any ongoing speech before starting a new one
       await Speech.speak(overlayTexts[speechIndex]);
       setSpeechIndex(speechIndex + 1);
     } catch (error) {
       console.error(error);
     } finally {
-      setIsButtonsDisabled(false); // Enable buttons after speech playback
+      setIsButtonsDisabled(false);
     }
   }
 
-  React.useEffect(() => {
-    if (speechIndex >= overlayTexts.length) {
-      setIsOverlayVisible(true);
+  const handleOverlayPress = async () => {
+    if (isOverlayVisible) {
+      if (speechIndex < overlayTexts.length) {
+        await Speech.stop(); // Stop any ongoing speech before proceeding
+        helpSound();
+      } else {
+        setIsOverlayVisible(false);
+        setSpeechIndex(0);
+        setIsButtonsDisabled(false);
+      }
     }
-  }, [speechIndex]);
+  };
 
   const handleCameraCapture = async () => {
-    if (!cameraPermission || isButtonsDisabled) { // Prevent capture when buttons are disabled
+    if (!cameraPermission || isButtonsDisabled) {
       console.log('Camera permission not granted or buttons are disabled.');
       return;
     }
@@ -59,18 +67,6 @@ export default function App() {
   };
 
   const cameraRef = React.useRef(null);
-
-  const handleOverlayPress = () => {
-    if (isOverlayVisible) {
-      if (speechIndex < overlayTexts.length) {
-        helpSound();
-      } else {
-        setIsOverlayVisible(false);
-        setSpeechIndex(0);
-        setIsButtonsDisabled(false); // Enable buttons when overlay is dismissed
-      }
-    }
-  };
 
   return (
     <View style={styles.container}>
@@ -131,11 +127,11 @@ const styles = StyleSheet.create({
     backgroundColor: 'yellow',
     padding: 20,
     borderRadius: 100,
-    zIndex: 2,
+    zIndex: 1,
   },
-  disabledButton: {
-    backgroundColor: 'gray', // Style for disabled button
-  },
+  //disabledButton: {
+    //backgroundColor: 'gray', // Style for disabled button
+  //},
   overlay: {
     ...StyleSheet.absoluteFillObject,
     backgroundColor: 'rgba(0, 0, 0, 0.7)',
