@@ -87,7 +87,7 @@ export default function App() {
           )}
           <Camera style={styles.camera} ref={cameraRef} />
           <TouchableOpacity
-            style={[styles.circularButton, isButtonsDisabled && styles.disabledButton]} 
+            style={[styles.circularButton]} 
             onPress={handleCameraCapture}
             disabled={isButtonsDisabled}>
             <MaterialIcons name="photo-camera" size={48} color="white" />
@@ -129,9 +129,6 @@ const styles = StyleSheet.create({
     borderRadius: 100,
     zIndex: 1,
   },
-  //disabledButton: {
-    //backgroundColor: 'gray', // Style for disabled button
-  //},
   overlay: {
     ...StyleSheet.absoluteFillObject,
     backgroundColor: 'rgba(0, 0, 0, 0.7)',
