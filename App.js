@@ -10,6 +10,7 @@ export default function App() {
   const [isOverlayVisible, setIsOverlayVisible] = React.useState(false);
   const [speechIndex, setSpeechIndex] = React.useState(0);
   const [isButtonsDisabled, setIsButtonsDisabled] = React.useState(false);
+  const [isFirstTime, setIsFirstTime] = React.useState(true);
 
   const overlayTexts = [
     '도움말 버튼을 누르셨습니다. 다음 설명을 듣고싶으시면 화면을 터치해주세요.',
@@ -24,14 +25,28 @@ export default function App() {
     (async () => {
       const { status } = await Camera.requestCameraPermissionsAsync();
       setCameraPermission(status === 'granted');
+
+      if (isFirstTime) {
+        setIsOverlayVisible(true);
+        setIsButtonsDisabled(true);
+        try {
+          await Speech.stop();
+          await Speech.speak("어플의 사용법을 알려드리겠습니다. 어플의 첫 실행 화면은 카메라 화면입니다. 휴대폰을 사용자가 가려고하는 방향으로 비추면 어플이 장애물과의 거리를 인식하여 음성으로 알려줍니다. 화면 중앙 하단에는 카메라 촬영버튼이 있습니다. 이 버튼은 식품을 촬영하는 버튼으로 과자, 라면을 카메라로 촬영하면 상품을 인식하여 어떤 상품인지 알려줍니다. 화면 우측 상단에는 도움말 버튼이 있습니다. 어플의 사용법을 듣고싶으시다면 우측 상단의 버튼을 눌러주세요. 어플 사용법 설명이 다 끝났습니다. 어플의 사용법을 듣고싶으시다면 다시 우측 상단의 도움말 버튼을 눌러주세요.");
+        } catch (error) {
+          console.error(error);
+        } finally {
+          setIsButtonsDisabled(false);
+        }
+        setIsFirstTime(false);
+      }
     })();
-  }, []);
+  }, [isFirstTime]);
 
   async function helpSound() {
     setIsOverlayVisible(true);
     setIsButtonsDisabled(true);
     try {
-      await Speech.stop(); // Stop any ongoing speech before starting a new one
+      await Speech.stop();
       await Speech.speak(overlayTexts[speechIndex]);
       setSpeechIndex(speechIndex + 1);
     } catch (error) {
@@ -44,7 +59,7 @@ export default function App() {
   const handleOverlayPress = async () => {
     if (isOverlayVisible) {
       if (speechIndex < overlayTexts.length) {
-        await Speech.stop(); // Stop any ongoing speech before proceeding
+        await Speech.stop();
         helpSound();
       } else {
         setIsOverlayVisible(false);
