@@ -20,6 +20,7 @@ export default function App() {
       '화면 중앙 하단에는 카메라 촬영버튼이 있습니다. 이 버튼은 식품을 촬영하는 버튼으로 과자, 라면을 카메라로 촬영하면 상품을 인식하여 어떤 상품인지 알려줍니다.',
       '화면 우측 상단에는 도움말 버튼이 있습니다. 어플의 사용법을 듣고싶으시면 우측 상단의 버튼을 눌러주세요.',
       '어플 사용법 설명이 다 끝났습니다. 어플의 사용법을 듣고싶으시다면 다시 우측 상단의 도움말 버튼을 눌러주세요.',
+      '카메라 화면으로 돌아갑니다.'
     ];
   
     const helpTexts = [
@@ -80,7 +81,7 @@ export default function App() {
         
           setIsOverlayVisible(true); // 오버레이 표시
         
-          if (textToSpeak.includes('어플 사용법 설명이 다 끝났습니다.')) {
+          if (textToSpeak.includes('카메라 화면으로 돌아갑니다.')) {
             setTimeout(() => setIsOverlayVisible(false), 3000); // 3초 후에 오버레이 숨기기
           }
           
