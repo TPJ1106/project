@@ -149,7 +149,7 @@ export default function App() {
               }}
               disabled={isButtonsDisabled}
             >
-              <MaterialIcons name="help" size={40} color="skyblue" />
+              <MaterialIcons name="help" size={70} color="#AE7FFF" />
             </TouchableOpacity>
             {isOverlayVisible && (
               <View style={styles.overlay}>
@@ -162,7 +162,7 @@ export default function App() {
               onPress={handleCameraCapture}
               disabled={isButtonsDisabled}
             >
-              <MaterialIcons name="photo-camera" size={48} color="white" />
+              <MaterialIcons name="photo-camera" size={70} color="white" />
             </TouchableOpacity>
           </View>
         </TouchableWithoutFeedback>
@@ -189,7 +189,7 @@ const styles = StyleSheet.create({
     top: 20,
     right: 20,
     backgroundColor: 'yellow',
-    padding: 5,
+    padding: 15,
     borderRadius: 30,
     zIndex: 2,
   },
@@ -197,9 +197,11 @@ const styles = StyleSheet.create({
     position: 'absolute',
     bottom: 30,
     alignSelf: 'center',
+    paddingVertical: 20, // 세로 여백은 그대로 두고 가로 여백만 추가
+    paddingHorizontal: 130, // 가로 여백을 늘립니다.
     backgroundColor: 'blue',
-    padding: 20,
-    borderRadius: 100,
+    padding: 45,
+    borderRadius: 30,
     zIndex: 1,
   },
   overlay: {
