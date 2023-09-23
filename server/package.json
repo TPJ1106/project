@@ -1,7 +1,7 @@
 {
   "name": "server",
   "version": "1.0.0",
-  "description": "Expo server with SSD and Express.js",
+  "description": "Expo server with CocoSsd and Express.js",
   "main": "server.js",
   "dependencies": {
     "express": "^4.17.1",
