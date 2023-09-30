@@ -1,5 +1,12 @@
 import React, { useRef, useState, useEffect } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, StatusBar, TouchableWithoutFeedback } from 'react-native';
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  StyleSheet,
+  StatusBar,
+  TouchableWithoutFeedback,
+} from 'react-native';
 import { Camera } from 'expo-camera';
 import * as Speech from 'expo-speech';
 import { MaterialIcons } from '@expo/vector-icons';
@@ -13,26 +20,26 @@ export default function App() {
   const [isButtonsDisabled, setIsButtonsDisabled] = useState(false);
   const [hasPlayedFirstTime, setHasPlayedFirstTime] = useState(false);
   const [speechText, setSpeechText] = useState('');
-  const serverAddress = 'http://localhost:3000';
+  const SERVER_ADDRESS = 'http://localhost:3000';
 
-  const firstTextLines = [
-    // 어플 첫 실행 시 음성 가이드 메시지
+  // 어플 첫 실행 시 음성 가이드 메시지
+  const firstText = [
     '어플의 사용법을 알려드리겠습니다.\n다음 설명을 듣고싶으시면 화면을 터치해주세요.',
     '어플의 첫 실행 화면은 카메라 화면입니다.',
     '휴대폰을 사용자가 가려고 하는 방향으로 비추면 어플이 장애물과의 거리를 인식하여 음성으로 알려줍니다.',
-    '화면 중앙 하단에는 카메라 촬영 버튼이 있습니다.\n이 버튼은 식품을 촬영하는 버튼으로, 과자나 라면을 카메라로 촬영하면 어떤 상품인지 알려줍니다.',
+    '화면 중앙 하단에는 카메라 촬영 버튼이 있습니다.\n이 버튼은 식품을 촬영하는 버튼으로, 과자나 라면을 촬영하면 어떤 식품인지 알려줍니다.',
     '식품을 촬영하면 촬영한 식품을 인식하여 어떤 식품인지 텍스트와 음성으로 알려준 뒤 3초 후에 이전 화면으로 돌아갑니다.',
     '화면 우측 상단에는 도움말 버튼이 있습니다. 어플의 사용법을 듣고싶으시면 우측 상단의 버튼을 눌러주세요.',
     '어플 사용법 설명이 다 끝났습니다.\n어플의 사용법을 다시 듣고싶으시다면 우측 상단의 도움말 버튼을 눌러주세요.',
     '카메라 화면으로 돌아갑니다.'
   ];
 
-  const helpTexts = [
-    // 도움말 메시지
+  // 도움말 메시지
+  const helpText = [
     '도움말 버튼을 누르셨습니다.\n다음 설명을 듣고싶으시면 화면을 터치해주세요.',
     '어플의 첫 실행 화면은 카메라 화면입니다.',
     '휴대폰을 사용자가 가려고 하는 방향으로 비추면 어플이 장애물과의 거리를 인식하여 음성으로 알려줍니다.',
-    '화면 중앙 하단에는 카메라 촬영 버튼이 있습니다.\n이 버튼은 식품을 촬영하는 버튼으로, 과자나 라면을 카메라로 촬영하면 어떤 상품인지 알려줍니다.',
+    '화면 중앙 하단에는 카메라 촬영 버튼이 있습니다.\n이 버튼은 식품을 촬영하는 버튼으로, 과자나 라면을 촬영하면 어떤 식품인지 알려줍니다.',
     '식품을 촬영하면 촬영한 식품을 인식하여 어떤 식품인지 텍스트와 음성으로 알려준 뒤 3초 후에 이전 화면으로 돌아갑니다.',
     '화면 우측 상단에는 도움말 버튼이 있습니다. 어플의 사용법을 듣고싶으시면 우측 상단의 버튼을 눌러주세요.',
     '어플 사용법 설명이 다 끝났습니다.\n어플의 사용법을 다시 듣고싶으시다면 다시 우측 상단의 도움말 버튼을 눌러주세요.',
@@ -63,8 +70,8 @@ export default function App() {
         return;
       }
 
-      if (speechIndex < firstTextLines.length - 1) {
-        const textToSpeak = firstTextLines[speechIndex + 1];
+      if (speechIndex < firstText.length - 1) {
+        const textToSpeak = firstText[speechIndex + 1];
         setSpeechText(textToSpeak);
       
         try {
@@ -88,12 +95,12 @@ export default function App() {
     }
   };
 
-  const speakHelpTextAndDisplayOverlay = async index => {
+  const speakHelpTextAndDisplayOverlay = async (index) => {
     setIsButtonsDisabled(true);
 
     try {
       await Speech.stop();
-      await Speech.speak(helpTexts[index]);
+      await Speech.speak(helpText[index]);
     } catch (error) {
       console.error(error);
     } finally {
@@ -101,7 +108,7 @@ export default function App() {
     }
 
     setIsOverlayVisible(true);
-    setSpeechText(helpTexts[index]);
+    setSpeechText(helpText[index]);
   };
 
   const handleHelpButtonPress = async () => {
@@ -144,7 +151,7 @@ export default function App() {
         setIsButtonsDisabled(true);
         try {
           await Speech.stop();
-          speakTextAndDisplayOverlay(firstTextLines[0]);
+          speakTextAndDisplayOverlay(firstText[0]);
         } catch (error) {
           console.error(error);
         } finally {
@@ -160,7 +167,7 @@ export default function App() {
     openServerResponsePopup();
   }, [serverResponse]);
 
-  // 서버로 이미지 업로드
+  //서버로 이미지 업로드
   const uploadImageToServer = async () => {
     if (!cameraPermission || isButtonsDisabled) {
       console.log('카메라 액세스 권한이 필요하거나 버튼이 비활성화되었습니다.');
@@ -176,8 +183,8 @@ export default function App() {
         name: 'photo.jpg',
       });
 
-      // 서버 응답 및 오류 처리
-      fetch(`${serverAddress}/predict`, {
+      //서버 응답 및 오류 처리
+      fetch(`${SERVER_ADDRESS}/predict`, {
         method: 'POST',
         body: formData,
         headers: {
@@ -190,13 +197,13 @@ export default function App() {
         const { fileName } = data.predictions;
         setServerResponse(`사진 파일 이름: ${fileName}`);
     
-        // 서버 응답을 받으면 팝업 창을 띄웁니다.
+        //서버 응답을 받으면 팝업 창을 띄웁니다.
         setIsOverlayVisible(true);
       })
       .catch(error => {
         console.error('이미지 업로드 오류:', error);
-
-        // 이미지 업로드 오류 메시지를 서버 응답 팝업과 동일한 방식으로 표시
+    
+        //이미지 업로드 오류 메시지를 서버 응답 팝업과 동일한 방식으로 표시
         setServerResponse('식품을 인식할 수 없습니다.\n다시 촬영해주세요.');
         setIsOverlayVisible(true);
       });
