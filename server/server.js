@@ -1,27 +1,85 @@
 const express = require('express');
-const { loadImage, makePredictions } = require('./ssd'); // coco-ssd 관련 코드 및 함수 가져오기
+const { exec } = require('child_process');
+const fs = require('fs');
+const multer = require('multer');
 
 const app = express();
 const port = process.env.PORT || 3000;
 
 app.use(express.json());
 
-app.post('/predict', async (req, res) => {
+// 이미지 저장을 위한 Multer 설정
+const storage = multer.memoryStorage();
+const upload = multer({ storage: storage });
+
+// 디렉토리 생성 함수
+const createDirectoryIfNotExists = (directory) => {
+  if (!fs.existsSync(directory)) {
+    fs.mkdirSync(directory);
+  }
+};
+
+// 이미지 저장 디렉토리 생성
+createDirectoryIfNotExists('./images');
+
+// 이미지 촬영 및 처리
+let isCapturing = false;
+
+app.post('/captureAndProcess', upload.single('image'), async (req, res) => {
+  if (isCapturing) {
+    return res.status(400).json({ message: '이미 촬영 중입니다.' });
+  }
+
   try {
-    const { image } = req.body;
+    isCapturing = true;
 
-    //이미지 분류 예측을 수행하는 함수 호출
-    const predictions = await makePredictions(image);
+    // 이미지 파일 이름 생성 (고유한 이름을 생성하도록 수정할 수 있음)
+    const timestamp = Date.now();
+    const fileName = `./images/${timestamp}.jpg`;
 
-    //예측 결과에서 파일 이름을 추출하거나 기본값으로 'unknown.jpg'를 사용
-    const fileName = predictions[0]?.filename || 'unknown.jpg';
+    // 이미지 데이터를 파일로 저장
+    fs.writeFileSync(fileName, req.file.buffer);
 
-    //예측 결과와 사진 파일 이름을 클라이언트에 반환
-    res.json({ predictions, fileName });
+    // distance.py 실행 및 .txt 파일 생성
+    const distanceCommand = `python3 ./ai/distance.py ${fileName}`;
+    exec(distanceCommand, async (error, stdout, stderr) => {
+      if (error) {
+        console.error('distance.py 실행 오류:', error);
+        isCapturing = false;
+        return res.status(500).json({ message: '거리 인식 중 오류 발생' });
+      }
 
+      // food.py 실행 및 .txt 파일 생성
+      const foodCommand = `python3 ./ai/food.py ${fileName}`;
+      exec(foodCommand, async (foodError, foodStdout, foodStderr) => {
+        if (foodError) {
+          console.error('food.py 실행 오류:', foodError);
+          isCapturing = false;
+          return res.status(500).json({ message: '음식 인식 중 오류 발생' });
+        }
+
+        // 결과 .txt 파일 읽기
+        const distanceResultFileName = `${fileName.split('.')[0]}_distance.txt`;
+        const distanceResultFilePath = `./ai/${distanceResultFileName}`;
+        const distanceResultText = fs.readFileSync(distanceResultFilePath, 'utf-8');
+
+        const foodResultFileName = `${fileName.split('.')[0]}_food.txt`;
+        const foodResultFilePath = `./ai/${foodResultFileName}`;
+        const foodResultText = fs.readFileSync(foodResultFilePath, 'utf-8');
+
+        // 결과 .txt 파일 삭제
+        fs.unlinkSync(distanceResultFilePath);
+        fs.unlinkSync(foodResultFilePath);
+
+        // 클라이언트에 결과 전송
+        isCapturing = false;
+        res.json({ distanceResultText, foodResultText });
+      });
+    });
   } catch (error) {
-    console.error('Prediction error:', error);
-    res.status(500).json({ error: 'Prediction failed' });
+    console.error('캡처 및 처리 오류:', error);
+    isCapturing = false;
+    res.status(500).json({ message: '캡처 및 처리 중 오류 발생' });
   }
 });
 
