@@ -10,6 +10,7 @@ import {
 import { Camera } from 'expo-camera';
 import * as Speech from 'expo-speech';
 import { MaterialIcons } from '@expo/vector-icons';
+import { Text, TouchableOpacity } from 'react-native';
 
 export default function App() {
   const cameraRef = useRef(null);
@@ -311,6 +312,14 @@ export default function App() {
             >
               <MaterialIcons name="photo-camera" size={70} color="white" />
             </TouchableOpacity>
+
+            <TouchableOpacity
+            style={[styles.circularButton]}
+            onPress={captureAndProcessImage} // 클릭 시 서버로 요청을 보내고 결과를 음성으로 출력
+            disabled={isButtonsDisabled}
+            >
+           <MaterialIcons name="photo-camera" size={70} color="white" />
+      </TouchableOpacity>
           </View>
         </TouchableWithoutFeedback>
       )}

@@ -2,29 +2,17 @@ const express = require('express');
 const { exec } = require('child_process');
 const fs = require('fs');
 const multer = require('multer');
-
 const app = express();
 const port = process.env.PORT || 3000;
 
 app.use(express.json());
 
-// 이미지 저장을 위한 Multer 설정
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
 
-// 디렉토리 생성 함수
-const createDirectoryIfNotExists = (directory) => {
-  if (!fs.existsSync(directory)) {
-    fs.mkdirSync(directory);
-  }
-};
-
-// 이미지 저장 디렉토리 생성
-createDirectoryIfNotExists('./images');
-
-// 이미지 촬영 및 처리
 let isCapturing = false;
 
+// 이미지 촬영 및 처리 엔드포인트
 app.post('/captureAndProcess', upload.single('image'), async (req, res) => {
   if (isCapturing) {
     return res.status(400).json({ message: '이미 촬영 중입니다.' });
@@ -33,15 +21,15 @@ app.post('/captureAndProcess', upload.single('image'), async (req, res) => {
   try {
     isCapturing = true;
 
-    // 이미지 파일 이름 생성 (고유한 이름을 생성하도록 수정할 수 있음)
+    // 타임스탬프를 사용하여 이미지 파일 이름 생성
     const timestamp = Date.now();
-    const fileName = `./images/${timestamp}.jpg`;
+    const fileName = `./Tests2/input2/${timestamp}.jpg`;
 
     // 이미지 데이터를 파일로 저장
     fs.writeFileSync(fileName, req.file.buffer);
 
     // distance.py 실행 및 .txt 파일 생성
-    const distanceCommand = `python3 ./ai/distance.py ${fileName}`;
+    const distanceCommand = `python3 ./distance.py ${fileName}`;
     exec(distanceCommand, async (error, stdout, stderr) => {
       if (error) {
         console.error('distance.py 실행 오류:', error);
@@ -49,32 +37,18 @@ app.post('/captureAndProcess', upload.single('image'), async (req, res) => {
         return res.status(500).json({ message: '거리 인식 중 오류 발생' });
       }
 
-      // food.py 실행 및 .txt 파일 생성
-      const foodCommand = `python3 ./ai/food.py ${fileName}`;
-      exec(foodCommand, async (foodError, foodStdout, foodStderr) => {
-        if (foodError) {
-          console.error('food.py 실행 오류:', foodError);
-          isCapturing = false;
-          return res.status(500).json({ message: '음식 인식 중 오류 발생' });
-        }
+      const distanceResultFilePath = `./Tests2/output2/${timestamp}_distance.txt`;
 
-        // 결과 .txt 파일 읽기
-        const distanceResultFileName = `${fileName.split('.')[0]}_distance.txt`;
-        const distanceResultFilePath = `./ai/${distanceResultFileName}`;
-        const distanceResultText = fs.readFileSync(distanceResultFilePath, 'utf-8');
+      // 텍스트 파일의 내용을 읽음
+      const result_text = fs.readFileSync(distanceResultFilePath, 'utf-8');
 
-        const foodResultFileName = `${fileName.split('.')[0]}_food.txt`;
-        const foodResultFilePath = `./ai/${foodResultFileName}`;
-        const foodResultText = fs.readFileSync(foodResultFilePath, 'utf-8');
+      // 결과 파일 삭제
+      fs.unlinkSync(distanceResultFilePath);
 
-        // 결과 .txt 파일 삭제
-        fs.unlinkSync(distanceResultFilePath);
-        fs.unlinkSync(foodResultFilePath);
+      isCapturing = false;
 
-        // 클라이언트에 결과 전송
-        isCapturing = false;
-        res.json({ distanceResultText, foodResultText });
-      });
+      // 텍스트 파일 내용을 클라이언트로 전송
+      res.json({ distanceResultText: result_text });
     });
   } catch (error) {
     console.error('캡처 및 처리 오류:', error);
@@ -83,6 +57,42 @@ app.post('/captureAndProcess', upload.single('image'), async (req, res) => {
   }
 });
 
+// 카메라 버튼으로 촬영한 이미지 저장 엔드포인트
+app.post('/saveCameraImage', upload.single('image'), async (req, res) => {
+  try {
+    // 타임스탬프를 사용하여 이미지 파일 이름 생성
+    const timestamp = Date.now();
+    const fileName = `./Tests/input/${timestamp}.jpg`;
+
+    // 이미지 데이터를 파일로 저장
+    fs.writeFileSync(fileName, req.file.buffer);
+
+    // testFrom3.py 실행
+    const testFrom3Command = `python3 ./testFrom3.py ${fileName}`;
+    exec(testFrom3Command, async (error, stdout, stderr) => {
+      if (error) {
+        console.error('testFrom3.py 실행 오류:', error);
+        return res.status(500).json({ message: 'testFrom3.py 실행 중 오류 발생' });
+      }
+
+      const testResultFileName = `${timestamp}_test.txt`;
+      const testResultFilePath = `./Tests/output/${testResultFileName}`;
+
+      // 텍스트 파일의 내용을 읽음
+      const result_text = fs.readFileSync(testResultFilePath, 'utf-8');
+
+      // 결과 파일 삭제
+      fs.unlinkSync(testResultFilePath);
+
+      // 텍스트 파일 내용을 클라이언트로 전송
+      res.json({ testResultText: result_text });
+    });
+  } catch (error) {
+    console.error('이미지 저장 및 처리 오류:', error);
+    res.status(500).json({ message: '이미지 저장 및 처리 중 오류 발생' });
+  }
+});
+
 app.listen(port, () => {
-  console.log(`Server is running on port ${port}`);
+  console.log(`서버가 포트 ${port}에서 실행 중입니다.`);
 });
