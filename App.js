@@ -245,12 +245,9 @@ export default function App() {
       });
 
       // 서버 응답 및 오류 처리
-      fetch(`${SERVER_ADDRESS}/predict`, {
+      fetch(`${SERVER_ADDRESS}/saveCameraImage`, {
         method: 'POST',
         body: formData,
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
       })
         .then((response) => response.json())
         .then((data) => {
