@@ -10,7 +10,6 @@ import {
 import { Camera } from 'expo-camera';
 import * as Speech from 'expo-speech';
 import { MaterialIcons } from '@expo/vector-icons';
-import { Text, TouchableOpacity } from 'react-native';
 
 export default function App() {
   const cameraRef = useRef(null);
@@ -125,7 +124,7 @@ export default function App() {
       speakHelpTextAndDisplayOverlay(0);
     }
   };
-
+/*
   // 자동 촬영
   const startAutoCapture = () => {
     captureTimer = setInterval(() => {
@@ -138,7 +137,7 @@ export default function App() {
   const stopAutoCapture = () => {
     clearInterval(captureTimer);
   };
-  
+ */ 
   // 촬영 후 서버 전송 결과 음성 출력
   const captureAndProcessImage = async () => {
     try {
@@ -208,7 +207,7 @@ export default function App() {
       }
     })();
   }, [hasPlayedFirstTime]);
-
+/*
   // 어플 실행 시 항상 자동 촬영 시작
   useEffect(() => {
     startAutoCapture();
@@ -222,51 +221,65 @@ export default function App() {
       startAutoCapture();
     }
   }, [isSpeaking, isButtonsDisabled]);
-
+*/
   // 서버
   useEffect(() => {
     openServerResponsePopup();
   }, [serverResponse]);
 
-  // 서버로 이미지 업로드
-  const uploadImageToServer = async () => {
-    if (!cameraPermission || isButtonsDisabled) {
-      console.log('카메라 액세스 권한이 필요하거나 버튼이 비활성화되었습니다.');
-      return;
+// 서버로 이미지 업로드
+const uploadImageToServer = async () => {
+  if (!cameraPermission || isButtonsDisabled) {
+    console.log('카메라 액세스 권한이 필요하거나 버튼이 비활성화되었습니다.');
+    return;
+  }
+
+  if (cameraRef.current) {
+    const photo = await cameraRef.current.takePictureAsync();
+    const formData = new FormData();
+    formData.append('image', {
+      uri: photo.uri,
+      type: 'image/jpeg',
+      name: 'photo.jpg',
+    });
+
+    // 서버 응답 및 오류 처리
+    fetch(`${SERVER_ADDRESS}/saveCameraImage`, {
+    method: 'POST',
+    body: formData,
+  })
+  .then(async (response) => {
+    if (response.status === 200) {
+      const data = await response.json();
+     const { fileContent } = data;
+
+      // 텍스트로 표시
+      console.log('서버에서 받은 파일 내용(텍스트):', fileContent);
+
+      // 음성으로 표시
+      await Speech.stop(); // 현재 음성 재생 중인 경우 중지
+      await Speech.speak(fileContent); // 파일 내용을 음성으로 출력
+
+      // 서버 응답을 받으면 팝업 창을 띄웁니다.
+      setServerResponse(fileContent);
+      setIsOverlayVisible(true);
+    } else {
+      console.error('이미지 업로드 오류:', error);
+
+      // 이미지 업로드 오류 메시지를 서버 응답 팝업과 동일한 방식으로 표시
+      setServerResponse('식품을 인식할 수 없습니다.\n다시 촬영해주세요.');
+      setIsOverlayVisible(true);
     }
+  })
+  .catch((error) => {
+    console.error('이미지 업로드 오류:', error);
 
-    if (cameraRef.current) {
-      const photo = await cameraRef.current.takePictureAsync();
-      const formData = new FormData();
-      formData.append('image', {
-        uri: photo.uri,
-        type: 'image/jpeg',
-        name: 'photo.jpg',
-      });
-
-      // 서버 응답 및 오류 처리
-      fetch(`${SERVER_ADDRESS}/saveCameraImage`, {
-        method: 'POST',
-        body: formData,
-      })
-        .then((response) => response.json())
-        .then((data) => {
-          console.log('서버에서 받은 결과:', data.predictions);
-          const { fileName } = data.predictions;
-          setServerResponse(`사진 파일 이름: ${fileName}`);
-
-          // 서버 응답을 받으면 팝업 창을 띄웁니다.
-          setIsOverlayVisible(true);
-        })
-        .catch((error) => {
-          console.error('이미지 업로드 오류:', error);
-
-          // 이미지 업로드 오류 메시지를 서버 응답 팝업과 동일한 방식으로 표시
-          setServerResponse('식품을 인식할 수 없습니다.\n다시 촬영해주세요.');
-          setIsOverlayVisible(true);
-        });
-    }
-  };
+    // 이미지 업로드 오류 메시지를 서버 응답 팝업과 동일한 방식으로 표시
+    setServerResponse('식품을 인식할 수 없습니다.\n다시 촬영해주세요.');
+    setIsOverlayVisible(true);
+  });
+}
+};
 
   return (
     <View style={styles.container}>
@@ -309,14 +322,6 @@ export default function App() {
             >
               <MaterialIcons name="photo-camera" size={70} color="white" />
             </TouchableOpacity>
-
-            <TouchableOpacity
-            style={[styles.circularButton]}
-            onPress={captureAndProcessImage} // 클릭 시 서버로 요청을 보내고 결과를 음성으로 출력
-            disabled={isButtonsDisabled}
-            >
-           <MaterialIcons name="photo-camera" size={70} color="white" />
-      </TouchableOpacity>
           </View>
         </TouchableWithoutFeedback>
       )}
