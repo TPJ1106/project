@@ -14,6 +14,7 @@ import { MaterialIcons } from '@expo/vector-icons';
 export default function App() {
   const cameraRef = useRef(null);
   const [cameraPermission, setCameraPermission] = useState(null);
+  const [networkPermission, setNetworkPermission] = useState(null);
   const [serverResponse, setServerResponse] = useState(''); // 서버 응답을 저장하는 상태 변수
   const [isOverlayVisible, setIsOverlayVisible] = useState(false);
   const [speechIndex, setSpeechIndex] = useState(0);
@@ -243,6 +244,21 @@ const uploadImageToServer = async () => {
       name: 'photo.jpg',
     });
 
+    //이미지 로컬 디렉토리에 저장
+    const timestamp = Data.now();
+    const fileName = `./Test/input/${timestamp}.jpg`;
+    const fileContent = photo.base64;
+
+    //이미지 저장
+    try {
+      await FileSystem.writeAsStringAsync(fileName, fileContent, {
+        encoding: FileSystem.EncodingType.base64,
+      });
+    } catch (error) {
+      console.error('이미지 저장 오류: ', error);
+      return;
+    }
+
     // 서버 응답 및 오류 처리
     fetch(`${SERVER_ADDRESS}/saveCameraImage`, {
     method: 'POST',
@@ -287,6 +303,10 @@ const uploadImageToServer = async () => {
       {cameraPermission === null ? (
         <Text>카메라 액세스 권한 요청 중...</Text>
       ) : cameraPermission === false ? (
+        <Text>카메라 액세스 권한이 거부되었습니다. 권한을 부여해 주세요.</Text>
+      ) : networkPermission === null ? (
+        <Text>카메라 액세스 권한 요청 중...</Text>
+      ) : networkPermission === false ? (
         <Text>카메라 액세스 권한이 거부되었습니다. 권한을 부여해 주세요.</Text>
       ) : (
         <TouchableWithoutFeedback onPress={handleOverlayPress}>

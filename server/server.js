@@ -2,6 +2,7 @@ const express = require('express');
 const { exec } = require('child_process');
 const fs = require('fs');
 const multer = require('multer');
+const winston = require('../logger');
 const app = express();
 const port = process.env.PORT || 3000;
 
@@ -20,14 +21,14 @@ app.post('/captureAndProcess', upload.single('image'), async (req, res) => {
 
   try {
     isCapturing = true;
-
+/*
     // 타임스탬프를 사용하여 이미지 파일 이름 생성
     const timestamp = Date.now();
     const fileName = `./Tests2/input2/${timestamp}.jpg`;
 
     // 이미지 데이터를 파일로 저장
     fs.writeFileSync(fileName, req.file.buffer);
-
+*/
     // distance.py 실행 및 .txt 파일 생성
     const distanceCommand = `python3 ./distance.py ${fileName}`;
     exec(distanceCommand, async (error, stdout, stderr) => {
@@ -66,6 +67,14 @@ app.post('/saveCameraImage', upload.single('image'), async (req, res) => {
 
     // 이미지 데이터를 파일로 저장
     fs.writeFileSync(fileName, req.file.buffer);
+    
+    fs.writeFileSync(fileName, req.file.buffer, (error) => {
+      if (error) {
+        console.error('파일 저장 중 오류 발생: ', error);
+      } else {
+        console.log('파일이 성공적으로 저장되었습니다.');
+      }
+    });
 
     // testFrom3.py 실행
     const testFrom3Command = `python3 ./testFrom3.py ${fileName}`;
@@ -90,6 +99,26 @@ app.post('/saveCameraImage', upload.single('image'), async (req, res) => {
   } catch (error) {
     console.error('이미지 저장 및 처리 오류:', error);
     res.status(500).json({ message: '이미지 저장 및 처리 중 오류 발생' });
+  }
+});
+
+app.get('/api/data', (req, res) => {
+  try {
+    // 비즈니스 로직 수행
+
+    // 로깅 활용
+    winston.info('GET /api/data 요청 성공');
+
+    // 클라이언트에 응답
+    res.json({ message: '데이터를 성공적으로 가져옴' });
+  } catch (error) {
+    // 에러 핸들링
+
+    // 에러 로깅
+    winston.error('에러 발생', error);
+
+    // 에러 응답
+    res.status(500).json({ error: '서버 오류' });
   }
 });
 
