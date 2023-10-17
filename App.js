@@ -246,7 +246,7 @@ const uploadImageToServer = async () => {
 
     //이미지 로컬 디렉토리에 저장
     const timestamp = Data.now();
-    const fileName = `./Test/input/${timestamp}.jpg`;
+    const fileName = `./Tests/input/${timestamp}.jpg`;
     const fileContent = photo.base64;
 
     //이미지 저장
