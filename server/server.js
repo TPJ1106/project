@@ -67,7 +67,7 @@ app.post('/captureAndProcess', upload.single('image'), async (req, res) => {
   }
 });
 
-// 카메라 버튼으로 촬영한 이미지 저장 엔드포인트
+//식품 인식
 app.post('/saveCameraImage', upload.single('image'), async (req, res) => {
   try {
     const path = require('path');
@@ -85,35 +85,28 @@ app.post('/saveCameraImage', upload.single('image'), async (req, res) => {
     // 이미지를 filePath에 저장
     fs.writeFileSync(filePath, req.file.buffer);
 
-    // 이미지 데이터를 파일로 저장
-    fs.writeFileSync(fileName, req.file.buffer, (error) => {
+    console.log('파일이 성공적으로 저장되었습니다.');
+
+    // testFrom3.py 실행
+    const scriptPath = path.join(__dirname, 'testFrom3.py');
+    const testFrom3Command = `python3 ${scriptPath} ${fileName}`;
+    exec(testFrom3Command, async (error, stdout, stderr) => {
       if (error) {
-        console.error('파일 저장 중 오류 발생: ', error);
-        res.status(500).json({ message: '이미지 저장 중 오류 발생' });
-      } else {
-        console.log('파일이 성공적으로 저장되었습니다.');
-
-        // testFrom3.py 실행
-        const testFrom3Command = `python3 ./testFrom3.py ${fileName}`;
-        exec(testFrom3Command, async (error, stdout, stderr) => {
-          if (error) {
-            console.error('testFrom3.py 실행 오류:', error);
-            return res.status(500).json({ message: 'testFrom3.py 실행 중 오류 발생' });
-          }
-
-          const testResultFileName = `${timestamp}_test.txt`;
-          const testResultFilePath = `./Tests/output/${testResultFileName}`;
-
-          // 텍스트 파일의 내용을 읽음
-          const result_text = fs.readFileSync(testResultFilePath, 'utf-8');
-
-          // 결과 파일 삭제
-          fs.unlinkSync(testResultFilePath);
-
-          // 여기에서 클라이언트로 결과 전송
-          res.json({ testResultText: result_text });
-        });
+        console.error('testFrom3.py 실행 오류:', error);
+        return res.status(500).json({ message: 'testFrom3.py 실행 중 오류 발생' });
       }
+
+      const testResultFileName = `${timestamp}_test.txt`;
+      const testResultFilePath = `./Tests/output/${testResultFileName}`;
+
+      // 텍스트 파일의 내용을 읽음
+      const result_text = fs.readFileSync(testResultFilePath, 'utf-8');
+
+      // 결과 파일 삭제
+      fs.unlinkSync(testResultFilePath);
+
+      // 여기에서 클라이언트로 결과 전송
+      res.json({ testResultText: result_text });
     });
   } catch (error) {
     console.error('이미지 저장 및 처리 오류:', error);

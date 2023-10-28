@@ -10,7 +10,6 @@ import {
 import { Camera } from 'expo-camera';
 import * as Speech from 'expo-speech';
 import { MaterialIcons } from '@expo/vector-icons';
-import axios from 'axios';
 
 export default function App() {
   const cameraRef = useRef(null);
