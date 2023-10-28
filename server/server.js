@@ -39,7 +39,7 @@ app.post('/captureAndProcess', upload.single('image'), async (req, res) => {
     fs.writeFileSync(fileName, req.file.buffer);
 
     // distance.py 실행 및 .txt 파일 생성
-    const distanceCommand = `python3 ./distance.py ${fileName}`;
+    const distanceCommand = `python ./distance.py ${fileName}`;
     exec(distanceCommand, async (error, stdout, stderr) => {
       if (error) {
         console.error('distance.py 실행 오류:', error);
@@ -89,15 +89,17 @@ app.post('/saveCameraImage', upload.single('image'), async (req, res) => {
 
     // testFrom3.py 실행
     const scriptPath = path.join(__dirname, 'testFrom3.py');
-    const testFrom3Command = `python3 ${scriptPath} ${fileName}`;
+    const testFrom3Command = `python ${scriptPath} ${fileName}`;
     exec(testFrom3Command, async (error, stdout, stderr) => {
       if (error) {
         console.error('testFrom3.py 실행 오류:', error);
         return res.status(500).json({ message: 'testFrom3.py 실행 중 오류 발생' });
       }
 
-      const testResultFileName = `${timestamp}_test.txt`;
-      const testResultFilePath = `./Tests/output/${testResultFileName}`;
+      const path = require('path'); // path 모듈 불러오기
+
+      const testResultFileName = `${timestamp}.txt`;
+      const testResultFilePath = path.join(__dirname, 'Tests', 'output', testResultFileName);
 
       // 텍스트 파일의 내용을 읽음
       const result_text = fs.readFileSync(testResultFilePath, 'utf-8');
