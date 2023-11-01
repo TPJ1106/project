@@ -101,6 +101,7 @@ export default function App() {
     }
   };
 
+  //도움말 버튼 클릭 시 재생
   const speakHelpTextAndDisplayOverlay = async (index) => {
     setIsButtonsDisabled(true);
 
@@ -249,7 +250,7 @@ const uploadImageToServer = async () => {
         method: 'POST',
         body: formData, // 이미지를 FormData로 설정
         headers: {
-        'Content-Type': 'multipart/form-data', // 멀티파트 폼 데이터로 설정
+        'Content-Type': 'multipart/form-data; charset=utf-8', // 멀티파트 폼 데이터로 설정
       },
     });
 
