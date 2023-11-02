@@ -255,10 +255,12 @@ const uploadImageToServer = async () => {
     });
 
       if (response.status === 200) {
-        const data = await response.json({ encoding: 'utf-8' });
+        // 서버 응답 처리 시, 문자 인코딩을 UTF-8로 설정
+        const responseText = await response.text();
+        const resultText = new TextDecoder('utf-8').decode(responseText);
         await Speech.stop();
-        await Speech.speak(data.testResultText);
-        setServerResponse(data.testResultText);
+        await Speech.speak(resultText);
+        setServerResponse(resultText);        
         setIsOverlayVisible(true);
       } else {
         console.error('서버 오류:', response.statusText);

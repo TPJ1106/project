@@ -111,7 +111,7 @@ app.post('/saveCameraImage', upload.single('image'), async (req, res) => {
       res.setHeader('Content-Type', 'application/json; charset=UTF-8');
 
       // JSON 형식으로 데이터를 클라이언트로 전송
-      res.json({ testResultText: result_text });
+      res.send(result_text);
     });
   } catch (error) {
     console.error('이미지 저장 및 처리 오류:', error);
@@ -124,8 +124,6 @@ app.get('/', (req, res) => {
     // 클라이언트에 응답
     res.json({ message: '데이터를 성공적으로 가져옴' });
   } catch (error) {
-    // 에러 핸들링
-
     // 에러 응답
     res.status(500).json({ error: '서버 오류' });
   }
