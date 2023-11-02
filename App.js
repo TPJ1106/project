@@ -386,6 +386,5 @@ const styles = StyleSheet.create({
   serverResponseText: {
     fontSize: 20,
     textAlign: 'center',
-    fontFamily: 'sans-serif',
   },
 });

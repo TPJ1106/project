@@ -107,6 +107,8 @@ app.post('/saveCameraImage', upload.single('image'), async (req, res) => {
       // 결과 파일 삭제
       //fs.unlinkSync(testResultFilePath);
 
+      console.log(result_text);
+
       //문자 인코딩 설정
       res.setHeader('Content-Type', 'text/plain; charset=utf-8');
       res.send(result_text);
