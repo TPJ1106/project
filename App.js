@@ -101,7 +101,6 @@ export default function App() {
     }
   };
 
-  //도움말 버튼 클릭 시 재생
   const speakHelpTextAndDisplayOverlay = async (index) => {
     setIsButtonsDisabled(true);
 
@@ -250,17 +249,15 @@ const uploadImageToServer = async () => {
         method: 'POST',
         body: formData, // 이미지를 FormData로 설정
         headers: {
-        'Content-Type': 'multipart/form-data; charset=utf-8', // 멀티파트 폼 데이터로 설정
+        'Content-Type': 'multipart/form-data', // 멀티파트 폼 데이터로 설정
       },
     });
 
       if (response.status === 200) {
-        // 서버 응답 처리 시, 문자 인코딩을 UTF-8로 설정
-        const responseText = await response.text();
-        const resultText = Buffer.from(responseText, 'utf-8').toString();
+        const data = await response.text();
         await Speech.stop();
-        await Speech.speak(resultText);
-        setServerResponse(resultText);        
+        await Speech.speak(data.testResultText);
+        setServerResponse(data.testResultText);
         setIsOverlayVisible(true);
       } else {
         console.error('서버 오류:', response.statusText);
