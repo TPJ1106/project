@@ -295,7 +295,7 @@ const uploadImageToServer = async () => {
                 <Text style={styles.overlayText}>{speechText}</Text>
               </View>
             )}
-            
+
             <Camera style={styles.camera} ref={cameraRef} />
 
             {/* 카메라 버튼 */}
@@ -386,5 +386,6 @@ const styles = StyleSheet.create({
   serverResponseText: {
     fontSize: 20,
     textAlign: 'center',
+    fontFamily: 'sans-serif',
   },
 });
