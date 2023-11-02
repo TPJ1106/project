@@ -257,7 +257,7 @@ const uploadImageToServer = async () => {
       if (response.status === 200) {
         // 서버 응답 처리 시, 문자 인코딩을 UTF-8로 설정
         const responseText = await response.text();
-        const resultText = new TextDecoder('utf-8').decode(responseText);
+        const resultText = Buffer.from(responseText, 'utf-8').toString();
         await Speech.stop();
         await Speech.speak(resultText);
         setServerResponse(resultText);        
