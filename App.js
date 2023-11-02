@@ -227,31 +227,31 @@ export default function App() {
     openServerResponsePopup();
   }, [serverResponse]);
 
-// 이미지를 서버로 전송
-const uploadImageToServer = async () => {
-  if (!cameraPermission || isButtonsDisabled) {
-    console.log('카메라 액세스 권한이 필요하거나 버튼이 비활성화되었습니다.');
-    return;
-  }
+  // 이미지를 서버로 전송
+  const uploadImageToServer = async () => {
+    if (!cameraPermission || isButtonsDisabled) {
+      console.log('카메라 액세스 권한이 필요하거나 버튼이 비활성화되었습니다.');
+      return;
+    }
 
-  if (cameraRef.current) {
-    const photo = await cameraRef.current.takePictureAsync();
+    if (cameraRef.current) {
+      const photo = await cameraRef.current.takePictureAsync();
 
-    try {
-      const formData = new FormData();
-      formData.append('image', {
-        uri: photo.uri,
-        type: 'image/jpeg', // 이미지 유형에 따라 수정하세요.
-        name: 'photo.jpg',
+      try {
+        const formData = new FormData();
+        formData.append('image', {
+          uri: photo.uri,
+          type: 'image/jpeg', // 이미지 유형에 따라 수정하세요.
+          name: 'photo.jpg',
+        });
+
+        const response = await fetch(`${SERVER_ADDRESS}/saveCameraImage`, {
+          method: 'POST',
+          body: formData, // 이미지를 FormData로 설정
+          headers: {
+          'Content-Type': 'multipart/form-data', // 멀티파트 폼 데이터로 설정
+        },
       });
-
-      const response = await fetch(`${SERVER_ADDRESS}/saveCameraImage`, {
-        method: 'POST',
-        body: formData, // 이미지를 FormData로 설정
-        headers: {
-        'Content-Type': 'multipart/form-data', // 멀티파트 폼 데이터로 설정
-      },
-    });
 
       if (response.status === 200) {
         const data = await response.text();
