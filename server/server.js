@@ -108,7 +108,7 @@ app.post('/saveCameraImage', upload.single('image'), async (req, res) => {
       fs.unlinkSync(testResultFilePath);
 
       // 문자 인코딩 설정을 추가하여 클라이언트로 전송
-      res.header('Content-Type', 'text/plain; charset=utf-8'); // 문자 인코딩 설정
+      res.setHeader('Content-Type', 'application/json; charset=UTF-8');
       res.send(result_text);
     });
   } catch (error) {

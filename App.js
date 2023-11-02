@@ -255,7 +255,7 @@ const uploadImageToServer = async () => {
     });
 
       if (response.status === 200) {
-        const data = await response.text();
+        const data = await response.json({ encoding: 'utf-8' });
         await Speech.stop();
         await Speech.speak(data.testResultText);
         setServerResponse(data.testResultText);
