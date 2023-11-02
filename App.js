@@ -295,14 +295,7 @@ const uploadImageToServer = async () => {
                 <Text style={styles.overlayText}>{speechText}</Text>
               </View>
             )}
-
-            {/* 서버 응답 팝업 */}
-            {serverResponse !== '' && (
-              <View style={styles.serverResponsePopup}>
-                <Text style={styles.serverResponseText}>{serverResponse}</Text>
-              </View>
-            )}
-
+            
             <Camera style={styles.camera} ref={cameraRef} />
 
             {/* 카메라 버튼 */}
@@ -313,6 +306,13 @@ const uploadImageToServer = async () => {
             >
               <MaterialIcons name="photo-camera" size={70} color="white" />
             </TouchableOpacity>
+
+            {/* 서버 응답 팝업 */}
+            {serverResponse !== '' && (
+              <View style={styles.serverResponsePopup}>
+                <Text style={styles.serverResponseText}>{serverResponse}</Text>
+              </View>
+            )}
           </View>
         </TouchableWithoutFeedback>
       )}
