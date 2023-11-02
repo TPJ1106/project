@@ -257,7 +257,7 @@ const uploadImageToServer = async () => {
         const data = await response.text();
         await Speech.stop();
         await Speech.speak(data.testResultText);
-        setServerResponse(data.testResultText);
+        setServerResponse(data);
         setIsOverlayVisible(true);
       } else {
         console.error('서버 오류:', response.statusText);
