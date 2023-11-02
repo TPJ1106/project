@@ -107,6 +107,9 @@ app.post('/saveCameraImage', upload.single('image'), async (req, res) => {
       // 결과 파일 삭제
       fs.unlinkSync(testResultFilePath);
 
+      //문자 인코딩 설정
+      res.setHeader('Content-Type', 'application/json; charset=UTF-8');
+
       // JSON 형식으로 데이터를 클라이언트로 전송
       res.json({ testResultText: result_text });
     });
