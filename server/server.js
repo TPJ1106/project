@@ -7,7 +7,7 @@ const { hostname } = require('os');
 const app = express();
 const port = process.env.PORT || 3000;
 
-app.use(express.json());no
+app.use(express.json());
 
 // CORS 설정
 app.use((req, res, next) => {
@@ -107,9 +107,8 @@ app.post('/saveCameraImage', upload.single('image'), async (req, res) => {
       // 결과 파일 삭제
       fs.unlinkSync(testResultFilePath);
 
-      // 문자 인코딩 설정을 추가하여 클라이언트로 전송
-      res.setHeader('Content-Type', 'application/json; charset=UTF-8');
-      res.send(result_text);
+      // JSON 형식으로 데이터를 클라이언트로 전송
+      res.json({ testResultText: result_text });
     });
   } catch (error) {
     console.error('이미지 저장 및 처리 오류:', error);
