@@ -102,7 +102,7 @@ app.post('/saveCameraImage', upload.single('image'), async (req, res) => {
       const testResultFilePath = path.join(__dirname, 'Tests', 'output', testResultFileName);
 
       // 텍스트 파일의 내용을 읽음
-      const result_text = fs.readFileSync(testResultFilePath, 'latin1');
+      const result_text = fs.readFileSync(testResultFilePath, 'utf-8');
 
       // 결과 파일 삭제
       //fs.unlinkSync(testResultFilePath);
