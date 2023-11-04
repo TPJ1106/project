@@ -14,7 +14,7 @@ import { MaterialIcons } from '@expo/vector-icons';
 export default function App() {
   const cameraRef = useRef(null);
   const [cameraPermission, setCameraPermission] = useState(null);
-  const [serverResponse, setServerResponse] = useState(''); // 서버 응답을 저장하는 상태 변수
+  const [serverResponse, setServerResponse] = useState('');
   const [isOverlayVisible, setIsOverlayVisible] = useState(false);
   const [speechIndex, setSpeechIndex] = useState(0);
   const [isButtonsDisabled, setIsButtonsDisabled] = useState(false);
@@ -26,7 +26,7 @@ export default function App() {
 
   const SERVER_ADDRESS = `http://172.30.1.15:3000`;  
 
-  // 어플 첫 실행 시 음성 가이드 메시지
+  // 어플 첫 실행 시 가이드 메시지
   const firstText = [
     '어플의 사용법을 알려드리겠습니다.\n다음 설명을 듣고싶으시면 화면을 터치해주세요.',
     '어플의 첫 실행 화면은 카메라 화면입니다.',
@@ -52,7 +52,7 @@ export default function App() {
     '카메라 화면으로 돌아갑니다.'
   ];
 
-  // 어플 첫 실행 시 음성 재생
+  // 어플 첫 실행 시 가이드 메시지 음성 재생
   const speakTextAndDisplayOverlay = async (text) => {
     setIsButtonsDisabled(true);
 
@@ -68,6 +68,7 @@ export default function App() {
     setIsOverlayVisible(true);
   };
 
+  //터치 시 다음 음성으로 넘어가기
   const handleOverlayPress = async () => {
     if (isOverlayVisible) {
       if (!hasPlayedFirstTime) {
@@ -101,6 +102,7 @@ export default function App() {
     }
   };
 
+  //도움말 음성 재생
   const speakHelpTextAndDisplayOverlay = async (index) => {
     setIsButtonsDisabled(true);
 
@@ -117,6 +119,7 @@ export default function App() {
     setSpeechText(helpText[index]);
   };
 
+  //도움말 선택 시 항상 처음 음성부터 재생하도록 설정
   const handleHelpButtonPress = async () => {
     if (!isOverlayVisible) {
       setIsOverlayVisible(true);
@@ -124,69 +127,8 @@ export default function App() {
       speakHelpTextAndDisplayOverlay(0);
     }
   };
-/*
-  // 자동 촬영
-  const startAutoCapture = () => {
-    captureTimer = setInterval(() => {
-      if (!isOverlayVisible && !isSpeaking) {
-        captureAndProcessImage();
-      }
-    }, captureInterval);
-  };
 
-  const stopAutoCapture = () => {
-    clearInterval(captureTimer);
-  };
- */ 
-  // 촬영 후 서버 전송 결과 음성 출력
-  const captureAndProcessImage = async () => {
-    try {
-      const response = await fetch(`${SERVER_ADDRESS}/captureAndProcess`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-        body: JSON.stringify({}),
-      });
-
-      if (response.status === 200) {
-        const data = await response.json();
-        // data에 예측 및 결과 텍스트가 포함됩니다.
-        const { distanceResultText, foodResultText } = data;
-
-        // 여기서 음성으로 결과를 출력할 수 있습니다.
-        await Speech.speak(distanceResultText);
-        await Speech.speak(foodResultText);
-      } else {
-        console.error('이미지 처리 오류:', response.statusText);
-      }
-    } catch (error) {
-      console.error('이미지 처리 오류:', error);
-    }
-  };
-
-  // 서버 응답 팝업 열기
-  const openServerResponsePopup = () => {
-    if (serverResponse) {
-      playPopupMessage(); // 팝업 텍스트를 음성으로 재생
-    }
-  };
-
-  const playPopupMessage = async () => {
-    try {
-      await Speech.stop(); // 현재 음성 재생 중인 경우 중지
-      await Speech.speak(serverResponse); // 팝업에 표시된 텍스트를 음성으로 재생
-    } catch (error) {
-      console.error('음성 재생 오류:', error);
-    }
-  
-    // 3초 후에 팝업을 자동으로 닫습니다.
-    setTimeout(() => {
-      setServerResponse(''); // 서버 응답을 초기화하여 팝업 내용을 지웁니다.
-      setIsOverlayVisible(false); // 팝업을 닫습니다.
-    }, 3000); // 3초 후에 실행
-  };
-
+  //카메라 액세스 권한 요청 및 어플 처음 실행 확인
   useEffect(() => {
     (async () => {
       const { status } = await Camera.requestCameraPermissionsAsync();
@@ -208,12 +150,73 @@ export default function App() {
     })();
   }, [hasPlayedFirstTime]);
 /*
-  // 어플 실행 시 항상 자동 촬영 시작
+  //자동 촬영
+  const startAutoCapture = () => {
+    captureTimer = setInterval(() => {
+      if (!isOverlayVisible && !isSpeaking) {
+        captureAndProcessImage();
+      }
+    }, captureInterval);
+  };
+
+  const stopAutoCapture = () => {
+    clearInterval(captureTimer);
+  };
+ */ 
+  //자동 촬영 후 서버 전송 결과 음성 출력
+  const captureAndProcessImage = async () => {
+    try {
+      const response = await fetch(`${SERVER_ADDRESS}/captureAndProcess`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+        body: JSON.stringify({}),
+      });
+
+      if (response.status === 200) {
+        const data = await response.json();
+        const { distanceResultText, foodResultText } = data;
+
+        await Speech.speak(distanceResultText);
+        await Speech.speak(foodResultText);
+      } else {
+        console.error('이미지 처리 오류:', response.statusText);
+      }
+    } catch (error) {
+      console.error('이미지 처리 오류:', error);
+    }
+  };
+
+  //팝업창 열기
+  const openServerResponsePopup = () => {
+    if (serverResponse) {
+      playPopupMessage();
+    }
+  };
+
+  //팝업 텍스트를 음성으로 재생
+  const playPopupMessage = async () => {
+    try {
+      await Speech.stop();
+      await Speech.speak(serverResponse);
+    } catch (error) {
+      console.error('음성 재생 오류:', error);
+    }
+  
+    // 3초 후 팝업창 닫기
+    setTimeout(() => {
+      setServerResponse('');
+    }, 3000);
+  };
+
+/*
+  //어플 실행 시 항상 자동 촬영 시작
   useEffect(() => {
     startAutoCapture();
   }, []);
 
-  // 음성 재생 중 또는 카메라 버튼 누를 때만 자동 촬영 중지
+  //음성 재생 중 또는 카메라 버튼 누를 때만 자동 촬영 중지
   useEffect(() => {
     if (isSpeaking || isButtonsDisabled) {
       stopAutoCapture();
@@ -222,12 +225,12 @@ export default function App() {
     }
   }, [isSpeaking, isButtonsDisabled]);
 */
-  // 서버
+  //서버
   useEffect(() => {
     openServerResponsePopup();
   }, [serverResponse]);
 
-  // 이미지를 서버로 전송
+  //카메라 버튼으로 촬영한 이미지를 서버로 전송
   const uploadImageToServer = async () => {
     if (!cameraPermission || isButtonsDisabled) {
       console.log('카메라 액세스 권한이 필요하거나 버튼이 비활성화되었습니다.');
@@ -241,37 +244,35 @@ export default function App() {
         const formData = new FormData();
         formData.append('image', {
           uri: photo.uri,
-          type: 'image/jpeg', // 이미지 유형에 따라 수정하세요.
+          type: 'image/jpeg',
           name: 'photo.jpg',
         });
 
         const response = await fetch(`${SERVER_ADDRESS}/saveCameraImage`, {
           method: 'POST',
-          body: formData, // 이미지를 FormData로 설정
+          body: formData,
           headers: {
-          'Content-Type': 'multipart/form-data', // 멀티파트 폼 데이터로 설정
+          'Content-Type': 'multipart/form-data',
         },
       });
 
-      if (response.status === 200) {
-        const data = await response.text();
-        await Speech.stop();
-        await Speech.speak(data.testResultText);
-        setServerResponse(data);
-        setIsOverlayVisible(true);
-      } else {
-        console.error('서버 오류:', response.statusText);
-        setServerResponse('서버로 이미지를 업로드하지 못했습니다.');
-        setIsOverlayVisible(true);
+        if (response.status === 200) {
+          const data = await response.text();
+          await Speech.stop();
+          await Speech.speak(data.testResultText);
+          setServerResponse(data);
+        } else {
+          console.error('서버 오류:', response.statusText);
+          setServerResponse('서버로 이미지를 업로드하지 못했습니다.');
+        }
+      } catch (error) {
+        console.error('이미지 업로드 오류:', error);
+        setServerResponse('식품을 인식할 수 없습니다.\n다시 촬영해 주세요.');
       }
-    } catch (error) {
-      console.error('이미지 업로드 오류:', error);
-      setServerResponse('식품을 인식할 수 없습니다.\n다시 촬영해 주세요.');
-      setIsOverlayVisible(true);
     }
-  }
-};
-  
+  };
+
+  //어플 화면
   return (
     <View style={styles.container}>
       <StatusBar hidden={true} />
@@ -307,7 +308,7 @@ export default function App() {
               <MaterialIcons name="photo-camera" size={70} color="white" />
             </TouchableOpacity>
 
-            {/* 서버 응답 팝업 */}
+            {/* 팝업창 */}
             {serverResponse !== '' && (
               <View style={styles.serverResponsePopup}>
                 <Text style={styles.serverResponseText}>{serverResponse}</Text>
@@ -333,6 +334,7 @@ const styles = StyleSheet.create({
   camera: {
     flex: 1,
   },
+  //도움말 버튼
   helpButton: {
     position: 'absolute',
     top: 20,
@@ -342,6 +344,7 @@ const styles = StyleSheet.create({
     borderRadius: 30,
     zIndex: 2,
   },
+  //카메라 버튼
   circularButton: {
     position: 'absolute',
     bottom: 30,
@@ -353,6 +356,7 @@ const styles = StyleSheet.create({
     borderRadius: 30,
     zIndex: 1,
   },
+  //가이드 메시지 출력 시 배경
   overlay: {
     position: 'absolute',
     top: 0,
@@ -364,27 +368,28 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     zIndex: 3,
   },
+  //가이드 메시지
   overlayText: {
     color: 'white',
     fontSize: 18,
     textAlign: 'center',
     paddingHorizontal: 20,
   },
-
-  // 서버 응답 팝업
+  // 서버 응답 팝업창
   serverResponsePopup: {
     position: 'absolute',
     top: '40%',
     left: 20,
     right: 20,
     backgroundColor: 'white',
-    padding: 20,
+    padding: 35,
     borderRadius: 10,
     zIndex: 4,
-    elevation: 5, // Android에서 그림자 효과 주기
+    elevation: 5,
   },
+  //팝업창 텍스트
   serverResponseText: {
-    fontSize: 20,
+    fontSize: 25,
     textAlign: 'center',
   },
 });
