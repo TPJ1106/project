@@ -10,6 +10,7 @@ import {
 import { Camera } from 'expo-camera';
 import * as Speech from 'expo-speech';
 import { MaterialIcons } from '@expo/vector-icons';
+import { style } from 'deprecated-react-native-prop-types/DeprecatedViewPropTypes';
 
 export default function App() {
   const cameraRef = useRef(null);
@@ -299,13 +300,22 @@ export default function App() {
 
             <Camera style={styles.camera} ref={cameraRef} />
 
-            {/* 카메라 버튼 */}
+            {/* 식품 인식 카메라 버튼 */}
             <TouchableOpacity
-              style={[styles.circularButton]}
+              style={[styles.foodCameraButton]}
               onPress={uploadImageToServer}
               disabled={isButtonsDisabled}
             >
-              <MaterialIcons name="photo-camera" size={70} color="white" />
+              <MaterialIcons name='photo-camera' size={70} color='white' />
+            </TouchableOpacity>
+
+            {/* 매대 인식 카메라 버튼 */}
+            <TouchableOpacity
+              style={[styles.shelfCameraButton]}
+              onPress={uploadImageToServer}
+              disabled={isButtonsDisabled}
+            >
+              <MaterialIcons name='photo-camera' size={70} color='white' />
             </TouchableOpacity>
 
             {/* 팝업창 */}
@@ -344,17 +354,29 @@ const styles = StyleSheet.create({
     borderRadius: 30,
     zIndex: 2,
   },
-  //카메라 버튼
-  circularButton: {
+  //식품 인식 카메라 버튼
+  foodCameraButton: {
     position: 'absolute',
-    bottom: 30,
-    alignSelf: 'center',
-    paddingVertical: 20,
-    paddingHorizontal: 130,
-    backgroundColor: 'blue',
-    padding: 45,
+    bottom: 5,
+    left: 5,
+    alignSelf: 'left',
+    paddingVertical: 120,
+    paddingHorizontal: 65,
+    backgroundColor: 'red',
     borderRadius: 30,
-    zIndex: 1,
+    zIndex: 2,
+  },
+  //매대 인식 카메라 버튼
+  shelfCameraButton: {
+    position: 'absolute',
+    bottom: 5,
+    right: 5,
+    alignSelf: 'right',
+    paddingVertical: 120,
+    paddingHorizontal: 65,
+    backgroundColor: 'blue',
+    borderRadius: 30,
+    zIndex: 2,
   },
   //가이드 메시지 출력 시 배경
   overlay: {
