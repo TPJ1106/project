@@ -69,7 +69,7 @@ app.post('/captureAndProcess', upload.single('image'), async (req, res) => {
 });
 
 //식품 인식
-app.post('/saveCameraImage', upload.single('image'), async (req, res) => {
+app.post('/foodCameraImage', upload.single('image'), async (req, res) => {
   try {
     const path = require('path');
 
@@ -102,6 +102,57 @@ app.post('/saveCameraImage', upload.single('image'), async (req, res) => {
       //텍스트 파일 저장
       const testResultFileName = `${timestamp}.txt`;
       const testResultFilePath = path.join(__dirname, 'Tests', 'output', testResultFileName);
+
+      //텍스트 파일의 내용을 읽음
+      const result_text = fs.readFileSync(testResultFilePath, 'utf-8');
+
+      //결과 파일 삭제
+      //fs.unlinkSync(testResultFilePath);
+
+      //문자 인코딩 설정
+      res.setHeader('Content-Type', 'text/plain; charset=utf-8');
+      res.send(result_text);
+    });
+  } catch (error) {
+    console.error('이미지 저장 및 처리 오류:', error);
+    res.status(500).json({ message: '이미지 저장 및 처리 중 오류 발생' });
+  }
+});
+
+//매대 인식
+app.post('/shelfCameraImage', upload.single('image'), async (req, res) => {
+  try {
+    const path = require('path');
+
+    //이미지를 저장할 디렉토리 설정
+    const uploadDirectory = path.join(__dirname, 'Tests3', 'input');
+
+    //이미지 파일 이름 생성
+    const timestamp = Date.now();
+    const fileName = `${timestamp}.jpg`;
+
+    //전체 파일 경로 생성
+    const filePath = path.join(uploadDirectory, fileName);
+
+    //이미지를 filePath에 저장
+    fs.writeFileSync(filePath, req.file.buffer);
+
+    console.log('파일이 성공적으로 저장되었습니다.');
+
+    //testFrom3.py 실행
+    const scriptPath = path.join(__dirname, 'testFrom3.py');
+    const testFrom3Command = `python ${scriptPath} ${fileName}`;
+    exec(testFrom3Command, async (error, stdout, stderr) => {
+      if (error) {
+        console.error('testFrom3.py 실행 오류:', error);
+        return res.status(500).json({ message: 'testFrom3.py 실행 중 오류 발생' });
+      }
+
+      const path = require('path');
+
+      //텍스트 파일 저장
+      const testResultFileName = `${timestamp}.txt`;
+      const testResultFilePath = path.join(__dirname, 'Tests3', 'output', testResultFileName);
 
       //텍스트 파일의 내용을 읽음
       const result_text = fs.readFileSync(testResultFilePath, 'utf-8');

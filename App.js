@@ -231,8 +231,8 @@ export default function App() {
     openServerResponsePopup();
   }, [serverResponse]);
 
-  //카메라 버튼으로 촬영한 이미지를 서버로 전송
-  const uploadImageToServer = async () => {
+  //식품 카메라 버튼으로 촬영한 이미지를 서버로 전송
+  const foodUploadImageToServer = async () => {
     if (!cameraPermission || isButtonsDisabled) {
       console.log('카메라 액세스 권한이 필요하거나 버튼이 비활성화되었습니다.');
       return;
@@ -249,7 +249,49 @@ export default function App() {
           name: 'photo.jpg',
         });
 
-        const response = await fetch(`${SERVER_ADDRESS}/saveCameraImage`, {
+        const response = await fetch(`${SERVER_ADDRESS}/foodCameraImage`, {
+          method: 'POST',
+          body: formData,
+          headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+
+        if (response.status === 200) {
+          const data = await response.text();
+          await Speech.stop();
+          await Speech.speak(data.testResultText);
+          setServerResponse(data);
+        } else {
+          console.error('서버 오류:', response.statusText);
+          setServerResponse('서버로 이미지를 업로드하지 못했습니다.');
+        }
+      } catch (error) {
+        console.error('이미지 업로드 오류:', error);
+        setServerResponse('식품을 인식할 수 없습니다.\n다시 촬영해 주세요.');
+      }
+    }
+  };
+
+  //매대 카메라 버튼으로 촬영한 이미지를 서버로 전송
+  const shelfUploadImageToServer = async () => {
+    if (!cameraPermission || isButtonsDisabled) {
+      console.log('카메라 액세스 권한이 필요하거나 버튼이 비활성화되었습니다.');
+      return;
+    }
+
+    if (cameraRef.current) {
+      const photo = await cameraRef.current.takePictureAsync();
+
+      try {
+        const formData = new FormData();
+        formData.append('image', {
+          uri: photo.uri,
+          type: 'image/jpeg',
+          name: 'photo.jpg',
+        });
+
+        const response = await fetch(`${SERVER_ADDRESS}/shelfCameraImage`, {
           method: 'POST',
           body: formData,
           headers: {
@@ -303,7 +345,7 @@ export default function App() {
             {/* 식품 인식 카메라 버튼 */}
             <TouchableOpacity
               style={[styles.foodCameraButton]}
-              onPress={uploadImageToServer}
+              onPress={foodUploadImageToServer}
               disabled={isButtonsDisabled}
             >
               <MaterialIcons name='photo-camera' size={70} color='white' />
@@ -312,7 +354,7 @@ export default function App() {
             {/* 매대 인식 카메라 버튼 */}
             <TouchableOpacity
               style={[styles.shelfCameraButton]}
-              onPress={uploadImageToServer}
+              onPress={shelfUploadImageToServer}
               disabled={isButtonsDisabled}
             >
               <MaterialIcons name='photo-camera' size={70} color='white' />
